@@ -125,6 +125,22 @@ class QueryTest < Test::Unit::TestCase
       }
     end
     
+    should "use $in for sets" do
+      Query.new(Room, :foo => Set.new([1,2,3])).criteria.should == {
+        :foo => {'$in' => [1,2,3]}
+      }
+    end
+    
+    should "not use $in for sets if already using array operator" do
+      Query.new(Room, :foo => {'$all' => Set.new([1,2,3])}).criteria.should == {
+        :foo => {'$all' => [1,2,3]}
+      }
+
+      Query.new(Room, :foo => {'$any' => Set.new([1,2,3])}).criteria.should == {
+        :foo => {'$any' => [1,2,3]}
+      }
+    end
+    
     should "work arbitrarily deep" do
       Query.new(Room, :foo => {:bar => [1,2,3]}).criteria.should == {
         :foo => {:bar => {'$in' => [1,2,3]}}
